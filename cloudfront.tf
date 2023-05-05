@@ -3,19 +3,12 @@ resource "aws_cloudfront_distribution" "www_distribution" {
   // origin is where CloudFront gets its content from.
   origin {
 
-    custom_origin_config {
-      // These are all the defaults.
-      http_port              = "80"
-      https_port             = "443"
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
-    }
-
     // Here we're using our S3 bucket's URL!
-    domain_name = "aws_s3_bucket.bucket.bucket_regional_domain_name"
+    domain_name = aws_s3_bucket.bucket.bucket_regional_domain_name
     // This can be any name to identify this origin.
-    origin_id   = "${var.domainName}"
-  }
+    origin_id   = aws_s3_bucket.bucket.id
+    origin_access_control_id = aws_cloudfront_origin_access_control.arha-dev.id
+}
 
   enabled             = true
   default_root_object = "index.html"
@@ -57,3 +50,11 @@ resource "aws_cloudfront_distribution" "www_distribution" {
     ssl_support_method  = "sni-only"
   }
 }
+resource "aws_cloudfront_origin_access_control" "arha-dev" {
+  name                              = "arha-dev"
+  description                       = "arha-dev Policy"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+                                                          
